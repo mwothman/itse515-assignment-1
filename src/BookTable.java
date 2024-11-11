@@ -34,7 +34,7 @@ public class BookTable {
 	
 		Book[] filteredBooks = new Book[0];
 		for (Book book : books) {
-	        if (book.getAuther().equals(auther)) {
+	        if (book.getAuthor().equals(auther)) {
 	            Book[] temp = new Book[filteredBooks.length + 1];
 	            for (int i = 0; i < filteredBooks.length; i++) {
 	                temp[i] = filteredBooks[i];
