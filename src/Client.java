@@ -23,17 +23,6 @@ public class Client extends Frame implements ActionListener {
 
     // Constructor
     public Client() {
-        // Set up server connection
-        try {
-            socket = new Socket("127.0.0.1", 2000);
-            inputStream = socket.getInputStream();
-            outputStream = socket.getOutputStream();
-            printWriter = new PrintWriter(outputStream, true);
-            bufferReader = new BufferedReader(new InputStreamReader(inputStream));
-        } catch (IOException e) {
-            System.out.println("Error connecting with the server: " + e);
-        }
-
         setLayout(new BorderLayout());
 
         // bookPanel to show all books for sale
@@ -90,45 +79,58 @@ public class Client extends Frame implements ActionListener {
             }
         });
 
-        // Receive and display books
-        receiveBooksFromServer();
+        // Set up server connection
+        try {
+            socket = new Socket("127.0.0.1", 2000);
+            inputStream = socket.getInputStream();
+            outputStream = socket.getOutputStream();
+            printWriter = new PrintWriter(outputStream, true);
+            bufferReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            // Receive and display books
+            receiveBooksFromServer();
+        } catch (IOException e) {
+            System.out.println("Error connecting with the server: " + e);
+        }
+
     }
 
     private void receiveBooksFromServer() {
         try {
             // Read the number of books from the server
             int numberOfBooks = Integer.parseInt(bufferReader.readLine());
-            
+
             // Allocate the array with the size of the number of books
             books = new Book[numberOfBooks];
-    
+
             // Read the book details from the server and store them in the books array
             for (int i = 0; i < numberOfBooks; i++) {
                 String title = bufferReader.readLine();
                 String author = bufferReader.readLine();
                 String publicationDate = bufferReader.readLine();
                 float price = Float.parseFloat(bufferReader.readLine());
-    
+
                 // Create a new Book object with the received data
                 books[i] = new Book(title, author, publicationDate, price);
-                System.out.println("Received book: " + title);
+                System.out
+                        .println("Received book: " + title + " | " + author + " | " + publicationDate + " | " + price);
             }
-    
+
             // Now update the UI with received books
             updateBookSelectionUI();
         } catch (IOException e) {
             System.out.println("Error receiving books: " + e);
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing number: " + e);
         }
     }
-    
-
 
     // Method to update the book selection UI with the received books
     private void updateBookSelectionUI() {
         bookSelectionButtons = new Button[books.length];
         for (int i = 0; i < books.length; i++) {
             bookSelectionButtons[i] = new Button(books[i].getTitle());
-            bookSelectionButtons[i].setBackground(Color.lightGray); 
+            bookSelectionButtons[i].setBackground(Color.lightGray);
             bookSelectionButtons[i].setPreferredSize(new Dimension(150, 30)); // Set size for uniform appearance
             bookSelectionButtons[i].addActionListener(this); // Add action listener to each button
             bookPanel.add(bookSelectionButtons[i]);
@@ -136,17 +138,23 @@ public class Client extends Frame implements ActionListener {
         scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_ALWAYS);
         scrollPane.add(bookPanel);
         add(scrollPane, BorderLayout.CENTER);
-        validate();  // Refresh the frame layout
+        validate(); // Refresh the frame layout
     }
 
     // Method to close the connection to the server
     private void closeConnection() throws IOException {
-        if (printWriter != null) printWriter.println("Exit");
-        if (inputStream != null) inputStream.close();
-        if (outputStream != null) outputStream.close();
-        if (printWriter != null) printWriter.close();
-        if (bufferReader != null) bufferReader.close();
-        if (socket != null) socket.close();
+        if (printWriter != null)
+            printWriter.println("Exit");
+        if (inputStream != null)
+            inputStream.close();
+        if (outputStream != null)
+            outputStream.close();
+        if (printWriter != null)
+            printWriter.close();
+        if (bufferReader != null)
+            bufferReader.close();
+        if (socket != null)
+            socket.close();
     }
 
     @Override
@@ -174,7 +182,7 @@ public class Client extends Frame implements ActionListener {
             String selectedBook = selectedBookLabel.getText().replace("Selected Book: ", "");
             if (!selectedBook.equals("None")) {
                 // Code to handle buying the selected book (e.g., show confirmation)
-                printWriter.println(selectedBook);  // Send the selected book to the server
+                printWriter.println(selectedBook); // Send the selected book to the server
             } else {
                 selectedBookLabel.setText("No book selected!");
             }
