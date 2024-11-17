@@ -1,17 +1,31 @@
 public class BookTable {
-	private Book[] books;
-	
-	public Book[] geBooks() {
-		return books;
-	}
+    private Book[] books;
 
-	public void updateBooks(Book[] books) {
-		this.books = books;
-	}
-	
-	public int totalBooks() {
-		return books.length;
-	}
+    public BookTable() {
+        // Initialize books with default data
+        this.books = new Book[] {
+			new Book("The Great Gatsby", "F. Scott Fitzgerald", "1925-04-10", 10.99f, 10),
+			new Book("Moby-Dick", "Herman Melville", "1851-11-14", 18.50f, 2),
+			new Book("Pride and Prejudice", "Jane Austen", "1813-01-28", 8.99f, 6),
+			new Book("The Catcher in the Rye", "J.D. Salinger", "1951-07-16", 10.49f, 8),
+			new Book("The Hobbit", "J.R.R. Tolkien", "1937-09-21", 14.99f, 2),
+			new Book("The Lord of the Rings", "J.R.R. Tolkien", "1954-07-29", 22.99f, 1),
+			new Book("Harry Potter and the Sorcerer's Stone", "J.K. Rowling", "1997-06-26", 19.99f, 9),
+			new Book("The Alchemist", "Paulo Coelho", "1988-11-11", 13.99f, 4)
+		};;
+    }
+
+    public Book[] getBooks() {
+        return books;
+    }
+
+    public int getTotalBooks() {
+		int total = 0;
+		for (Book book : books){
+			total += book.getStock();
+		}
+        return total;
+    }
 
 	public Book[] filterByAvailablity() {
 	
@@ -63,7 +77,4 @@ public class BookTable {
 		
 		return filteredBooks;
 	}
-	
 }
-	
-
