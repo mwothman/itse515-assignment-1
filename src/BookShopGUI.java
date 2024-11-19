@@ -3,9 +3,9 @@ import java.awt.event.*;
 
 public class BookShopGUI {
     private Frame frame;
-    private TextField searchField;
-    private Button searchButton, clearSearchButton, filterButton, buyButton;
-    private Panel bookButtonsPanel;
+    private TextField searchField, titleField, authorField, priceField, stockField;
+    private Button searchButton, clearSearchButton, filterButton, buyButton, addBookButton, deleteBookButton;
+    private Panel bookButtonsPanel, warehousePanel;
     private Label selectedBookLabel, soldCountLabel, totalBooksLabel, totalSoldLabel;
     private BookTable bookTableData;
     private ScrollPane scrollPane;
@@ -36,15 +36,43 @@ public class BookShopGUI {
         topPanel.add(clearSearchButton);
         topPanel.add(filterButton);
 
+        // Warehouse panel for adding and deleting books
+        warehousePanel = new Panel(new GridLayout(0, 2, 5, 5));
+        titleField = new TextField();
+        authorField = new TextField();
+        priceField = new TextField();
+        stockField = new TextField();
+
+        addBookButton = new Button("Add Book");
+        addBookButton.setBackground(new Color(100, 200, 100));
+        addBookButton.setForeground(Color.WHITE);
+        addBookButton.setEnabled(false);
+
+        deleteBookButton = new Button("Delete Book");
+        deleteBookButton.setBackground(new Color(200, 100, 100));
+        deleteBookButton.setForeground(Color.WHITE);
+        deleteBookButton.setEnabled(false);
+
+        warehousePanel.add(new Label("Title:"));
+        warehousePanel.add(titleField);
+        warehousePanel.add(new Label("Author:"));
+        warehousePanel.add(authorField);
+        warehousePanel.add(new Label("Price:"));
+        warehousePanel.add(priceField);
+        warehousePanel.add(new Label("Stock:"));
+        warehousePanel.add(stockField);
+        warehousePanel.add(addBookButton);
+        warehousePanel.add(deleteBookButton);
+
         // Book buttons panel with scroll
         bookButtonsPanel = new Panel();
-        bookButtonsPanel.setLayout(new GridLayout(0, 2, 5, 5));
+        bookButtonsPanel.setLayout(new GridLayout(0, 2, 5, 5)); // Adjusted layout for book buttons
         scrollPane = new ScrollPane();
-        scrollPane.add(bookButtonsPanel);
-        populateBookButtons(bookTableData.getBooks());
+        scrollPane.add(bookButtonsPanel); // Add the book buttons panel to the scroll pane
+        populateBookButtons(bookTableData.getBooks()); // Populate initial book buttons
 
         // Bottom panel with selected book details
-        Panel bottomPanel = new Panel(new GridLayout(4, 1));
+        Panel bottomPanel = new Panel(new GridLayout(5, 1, 5, 5));
         bottomPanel.setBackground(new Color(230, 230, 230)); // Light neutral background for bottom panel
         selectedBookLabel = new Label("Selected Book: None");
         selectedBookLabel.setForeground(new Color(60, 60, 60)); // Dark gray text for better readability
@@ -65,13 +93,21 @@ public class BookShopGUI {
         bottomPanel.add(totalSoldLabel);
         bottomPanel.add(buyButton);
 
+        // Center panel for warehouse and book display
+        Panel centerPanel = new Panel(new BorderLayout());
+        centerPanel.setBackground(new Color(230, 230, 230));
+        centerPanel.add(warehousePanel, BorderLayout.NORTH);
+        centerPanel.add(scrollPane, BorderLayout.CENTER); // Add the scroll pane to the center panel
+
         // Adding panels to the frame
         frame.add(topPanel, BorderLayout.NORTH);
-        frame.add(scrollPane, BorderLayout.CENTER);
+        frame.add(centerPanel, BorderLayout.CENTER); // Now centerPanel contains the scrollPane
         frame.add(bottomPanel, BorderLayout.SOUTH);
 
+        // Adding event listeners
         addEventListeners();
 
+        // Frame settings
         frame.setSize(800, 600);
         frame.setVisible(true);
 
@@ -83,6 +119,13 @@ public class BookShopGUI {
     }
 
     private void addEventListeners() {
+
+        // Listens for changes in the fields to enable/disable Add button
+        titleField.addTextListener(e -> checkAddButtonState());
+        authorField.addTextListener(e -> checkAddButtonState());
+        priceField.addTextListener(e -> checkAddButtonState());
+        stockField.addTextListener(e -> checkAddButtonState());
+
         searchButton.addActionListener(e -> {
             String searchQuery = searchField.getText();
             if (!searchQuery.isEmpty()) {
@@ -106,7 +149,7 @@ public class BookShopGUI {
                 if (book.getTitle().equals(selectedBookLabel.getText().replace("Selected Book: ", ""))) {
                     book.updateSoldAmount(1);
                     book.updateTotalStock(book.getStock() - 1);
-                    updateBookButton(book);  // Update only the selected book's button
+                    updateBookButton(book); // Update only the selected book's button
                     selectedBookLabel.setText("Selected Book: " + book.getTitle());
                     soldCountLabel.setText("Sold Count: " + book.getSoldCount());
                     updateStatistics();
@@ -114,6 +157,70 @@ public class BookShopGUI {
                 }
             }
         });
+
+        addBookButton.addActionListener(e -> {
+            String title = titleField.getText();
+            String author = authorField.getText();
+            String priceText = priceField.getText();
+            String stockText = stockField.getText();
+
+            // Validate input fields
+            if (title.isEmpty() || author.isEmpty() || priceText.isEmpty() || stockText.isEmpty()) {
+                System.out.println("All fields must be filled out!");
+                return; // You can show a dialog instead for user-friendly feedback
+            }
+
+            try {
+                float price = Float.parseFloat(priceText);
+                int stock = Integer.parseInt(stockText);
+                Book newBook = new Book(title, author, "N/A", price, stock);
+                bookTableData.addBook(newBook, stock); // Add the new book to the BookTable
+                populateBookButtons(bookTableData.getBooks()); // Update the book buttons in the UI
+                clearFields(); // Optionally clear the input fields
+            } catch (NumberFormatException ex) {
+                System.out.println("Invalid price or stock value!");
+            }
+        });
+
+        // Delete Book button
+        deleteBookButton.addActionListener(e -> {
+            String title = selectedBookLabel.getText().replace("Selected Book: ", "");
+
+            // Check if a book is selected
+            if (title.isEmpty() || title.equals("None")) {
+                System.out.println("No book selected to delete!");
+                return;
+            }
+
+            // Find and remove the selected book from the BookTable
+            for (Book book : bookTableData.getBooks()) {
+                if (book.getTitle().equals(title)) {
+                    bookTableData.deleteBook(book); // Remove the book from the BookTable
+                    populateBookButtons(bookTableData.getBooks()); // Update the book buttons in the UI
+                    clearFields(); // Optionally clear the input fields
+                    break;
+                }
+            }
+            deleteBookButton.setEnabled(false);
+        });
+    }
+
+    private void clearFields() {
+        titleField.setText("");
+        authorField.setText("");
+        priceField.setText("");
+        stockField.setText("");
+    }
+
+    // Method to check if the add button should be enabled or disabled
+    private void checkAddButtonState() {
+        // Disable the Add Book button if any field is empty
+        if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
+                priceField.getText().isEmpty() || stockField.getText().isEmpty()) {
+            addBookButton.setEnabled(false); // Disable Add Book button
+        } else {
+            addBookButton.setEnabled(true); // Enable Add Book button
+        }
     }
 
     private void populateBookButtons(Book[] books) {
@@ -140,6 +247,7 @@ public class BookShopGUI {
                 selectedBookLabel.setText("Selected Book: " + book.getTitle());
                 soldCountLabel.setText("Sold Count: " + book.getSoldCount());
                 buyButton.setEnabled(true);
+                deleteBookButton.setEnabled(true);
             });
 
             bookPanel.add(titleLabel);
@@ -162,7 +270,7 @@ public class BookShopGUI {
             Label titleLabel = (Label) bookPanel.getComponent(0);
             if (titleLabel.getText().contains(book.getTitle())) {
                 Label stockLabel = (Label) bookPanel.getComponent(3);
-                stockLabel.setText("Stock: " + book.getStock());  
+                stockLabel.setText("Stock: " + book.getStock());
                 bookPanel.repaint();
             }
         }
