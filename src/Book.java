@@ -2,9 +2,9 @@ public class Book {
     private String title;
     private String author;
     private String publicationDate;
-    private float price;
+    private double price;
 
-    public Book(String title, String author, String publicationDate, float price) {
+    public Book(String title, String author, String publicationDate, double price) {
         this.title = title;
         this.author = author;
         this.publicationDate = publicationDate;
@@ -23,14 +23,15 @@ public class Book {
         return publicationDate;
     }
 
-    public float getPrice() {
+    public double getPrice() {
         return price;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Book book = (Book) obj;
-        return title.equals(book.title) && author.equals(book.author);
+        return title.equalsIgnoreCase(book.title) && author.equalsIgnoreCase(book.author);
     }
 }
