@@ -128,7 +128,7 @@ public class BookShopControl extends Frame {
     }
 
     private void deleteBook() {
-        String title = titleField.getText();
+        String title = searchField.getText();
         if (bookTable.deleteBook(title)) {
             displayArea.setText("Book deleted successfully!\n");
             updateStatistics();

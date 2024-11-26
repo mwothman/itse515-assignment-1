@@ -29,8 +29,12 @@ public class BookTable {
     }
 
     public boolean deleteBook(String title) {
+        Book foundBook = searchBook(title);
+        if(foundBook == null){
+            return false;
+        }
         for (int i = 0; i < currentSize; i++) {
-            if (books[i].getTitle().equalsIgnoreCase(title)) {
+            if (books[i].getTitle().equalsIgnoreCase(foundBook.getTitle())) {
                 books[i] = books[currentSize - 1];
                 quantities[i] = quantities[currentSize - 1];
                 soldCopies[i] = soldCopies[currentSize - 1];
